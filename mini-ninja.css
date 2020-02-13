@@ -1,0 +1,15 @@
+#wrapper{
+  position:relative;
+}
+#myCanvas,#canvasTop,#enemies{
+  position:absolute; top:0px; left:0px;
+}
+#myCanvas {
+  background: black;
+  margin:  0 0;
+}
+
+* {
+  padding: 0;
+  margin: 0;
+}

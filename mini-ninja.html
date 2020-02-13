@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Gamedev Canvas Workshop</title>
+    <link rel="stylesheet" href="mini-ninja.css" />
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
+  </head>
+  <body>
+    <div id="wrapper">
+      <canvas id="myCanvas" width="1360" height="664"></canvas>
+      <canvas id="enemies" width="1360" height="664"></canvas>
+      <canvas id="canvastopLayer" width="1360" height="664"></canvas>
+    </div>
+
+    <script>
+      let canvas = document.getElementById("myCanvas");
+      let ctx = canvas.getContext("2d");
+      let canvasMid = document.getElementById("enemies");
+      let midLayer = canvasMid.getContext("2d");
+      let canvasFinal = document.getElementById("canvastopLayer");
+      let topLayer = canvasFinal.getContext("2d");
+
+      let x = 200;
+      let y = canvas.height / 2;
+      let dx = 0;
+      let dy = 0;
+      let ballRadius = 10;
+      let upPressed = false;
+      let downPressed = false;
+      var newBullet = false;
+      let img = new Image(); // Create new img element
+      img.src = "player.png"; // Set source path
+      let enemyImg = new Image(); // Create new img element
+      enemyImg.src = "player.png"; // Set source path
+      let spriteHeight = 100;
+      let spriteWidth = 200;
+      let enemyHeight = 100;
+      let enemyWidth = 200;
+      let bulletx = 0;
+      let bullety = 0;
+      var bulletArray = [];
+      var bulletCounter = 0;
+      var enemyCounter = 0;
+      var vx = 10;
+
+      requestAnimationFrame(loop);
+      requestAnimationFrame(enemyLoop);
+      setInterval("createEnemy()", 3000);
+      $(window).load(function(event) {
+        window.requestAnimationFrame(draw);
+      });
+
+      class Bullet {
+        constructor(index, x, y, vx) {
+          (this.index = index),
+            (this.x = x),
+            (this.y = y + 48),
+            (this.vx = vx),
+            (this.alive = true);
+        }
+        draw() {
+          midLayer.rect(this.x, this.y, 6, 6);
+          midLayer.fillStyle = "white";
+          midLayer.fill();
+        }
+        init() {
+          // Update position
+          this.draw();
+          sprites.push(this);
+        }
+        render() {
+          if (this.alive) {
+            // Render only if the bullet is alive (aka on screen)
+            midLayer.fillRect(this.x, this.y, 7, 7);
+          }
+        }
+        update() {
+          if (this.alive) {
+            // update the x value only if the object is alive
+            this.x += 4;
+            // Check if the bullet is on screen
+            if (this.x > canvas.width) {
+              this.alive = false;
+            }
+          }
+        }
+      }
+
+      // This way when we draw the bullet it's always blue
+      midLayer.fillStyle = "white";
+
+      // Our sprites container
+      var sprites = [];
+
+      function createBullet() {
+        bullets = new Bullet(bulletCounter, x, y, vx);
+        bulletCounter += 1;
+        bullets.init();
+      }
+
+      function loop() {
+        // Very simple and naive game loop
+        update();
+        render();
+        requestAnimationFrame(loop);
+      }
+
+      function update() {
+        // Here we update all the sprites
+        // THe reverse for loop is faster
+        for (var ix = sprites.length; ix--; ) {
+          sprites[ix].update();
+        }
+      }
+
+      function render() {
+        // Here we render all the sprites after clearing the screen
+        midLayer.clearRect(0, 0, canvas.width, canvas.height);
+        for (var ix = sprites.length; ix--; ) {
+          sprites[ix].render();
+        }
+      }
+
+      class Enemy {
+        constructor(index, st, y, vx) {
+          (this.index = index),
+            (this.x = st),
+            (this.y = y),
+            (this.vx = vx),
+            (this.alive = true);
+        }
+        draw() {
+          topLayer.drawImage(enemyImg, this.x, this.y, enemyWidth, enemyHeight);
+        }
+        init() {
+          // Update position
+          this.draw();
+          enemySprites.push(this);
+        }
+        render() {
+          if (this.alive) {
+            // Render only if the bullet is alive (aka on screen)
+            topLayer.drawImage(
+              enemyImg,
+              this.x,
+              this.y,
+              enemyWidth,
+              enemyHeight
+            );
+          }
+        }
+        update() {
+          if (this.alive) {
+            // update the x value only if the object is alive
+            this.x -= 2;
+            // Check if the bullet is on screen
+            if (this.x < 0) {
+              this.alive = false;
+            }
+          }
+        }
+      }
+
+      var enemySprites = [];
+
+      function createEnemy() {
+        enemies = new Enemy(enemyCounter, 1300, y, vx);
+        enemyCounter += 1;
+        enemies.init();
+      }
+
+      function enemyLoop() {
+        // Very simple and naive game loop
+        updateEnemy();
+        renderEnemy();
+        requestAnimationFrame(enemyLoop);
+      }
+      function updateEnemy() {
+        // Here we update all the sprites
+        // THe reverse for loop is faster
+        for (var jx = enemySprites.length; jx--; ) {
+          enemySprites[jx].update();
+        }
+      }
+
+      function renderEnemy() {
+        // Here we render all the sprites after clearing the screen
+        topLayer.clearRect(0, 0, canvas.width, canvas.height);
+        for (var jx = enemySprites.length; jx--; ) {
+          enemySprites[jx].render();
+        }
+      }
+      
+
+      document.addEventListener("keydown", keyDownHandler, false);
+      document.addEventListener("keyup", keyUpHandler, false);
+
+      function keyDownHandler(e) {
+        if (e.key == "Up" || e.key == "ArrowUp") {
+          downPressed = true;
+        } else if (e.key == "Down" || e.key == "ArrowDown") {
+          upPressed = true;
+        } else if (e.keyCode == 32 || e.key == "SpaceBar") {
+          createBullet();
+        }
+      }
+
+      function keyUpHandler(e) {
+        if (e.key == "Up" || e.key == "ArrowUp") {
+          downPressed = false;
+          dy = 0;
+        } else if (e.key == "Down" || e.key == "ArrowDown") {
+          upPressed = false;
+          dy = 0;
+        }
+      }
+
+      function drawPlayer() {
+        ctx.drawImage(img, 0, y, spriteWidth, spriteHeight);
+      }
+
+      function draw() {
+        console.log(x);
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        drawPlayer();
+        if (y + dy > canvas.height - 150) {
+          upPressed = false;
+          dy = 0;
+        }
+        if (y + dy < 0) {
+          downPressed = false;
+          dy = 0;
+        }
+        if (upPressed) {
+          dy = 4;
+        } else if (downPressed) {
+          dy = -4;
+        }
+        y += dy;
+        window.requestAnimationFrame(draw);
+      }
+    </script>
+  </body>
+</html>
