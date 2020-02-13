@@ -3,10 +3,28 @@
 }
 #myCanvas,#canvasTop,#enemies,#background{
   position:absolute; top:0px; left:0px;
+}
+#canvasTop {
+  z-index: 3;
+}
+#enemies {
   z-index: 1;
 }
+#myCanvas {
+  z-index: 2;
+}
 #background {
-  margin:  0 0;
+  z-index: -1;
+  background: black;
+}
+#resetBox {
+  top: 0px;
+  left: 0px;
+  height: 664;
+  width: 1360;
+  background: black;
+  position: absolute;
+  visibility: hidden;
 }
 
 

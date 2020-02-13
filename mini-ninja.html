@@ -12,6 +12,11 @@
       <canvas id="myCanvas" width="1360" height="664"></canvas>
       <canvas id="enemies" width="1360" height="664"></canvas>
       <canvas id="canvasfinalLayer" width="1360" height="664"></canvas>
+      <div id="resetBox"> 
+        <div id="gameOver">Game Over</div>
+        <div id="score"></div>
+        <button id="restart">Restart</button>
+      </div>
     </div>
 
     <script>
@@ -30,10 +35,10 @@
       let upPressed = false;
       let downPressed = false;
       var newBullet = false;
-      let img = new Image(); // Create new img element
-      img.src = "player.png"; // Set source path
-      let enemyImg = new Image(); // Create new img element
-      enemyImg.src = "enemy.png"; // Set source path
+      let img = new Image();
+      img.src = "player.png";
+      let enemyImg = new Image();
+      enemyImg.src = "enemy.png";
       let spriteHeight = 100;
       let spriteWidth = 200;
       let enemyHeight = 50;
@@ -81,7 +86,6 @@
       }
 
       function draw() {
-        console.log(x);
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         drawPlayer();
         if (y + dy > canvas.height - 150) {
@@ -108,8 +112,6 @@
             (this.y = enemyY),
             (this.vx = vx),
             (this.alive = true);
-          console.log(this.y);
-          console.log(this.x);
         }
         draw() {
           finalLayer.drawImage(
@@ -121,13 +123,11 @@
           );
         }
         init() {
-          // Update position
           this.draw();
           enemySprites.push(this);
         }
         render() {
           if (this.alive) {
-            // Render only if the bullet is alive (aka on screen)
             finalLayer.drawImage(
               enemyImg,
               this.x,
@@ -139,9 +139,7 @@
         }
         update() {
           if (this.alive) {
-            // update the x value only if the object is alive
             this.x -= 2;
-            // Check if the bullet is on screen
             if (this.x < 0) {
               this.alive = false;
             }
@@ -159,21 +157,17 @@
       }
 
       function enemyLoop() {
-        // Very simple and naive game loop
         updateEnemy();
         renderEnemy();
         requestAnimationFrame(enemyLoop);
       }
       function updateEnemy() {
-        // Here we update all the sprites
-        // THe reverse for loop is faster
         for (var jx = enemySprites.length; jx--; ) {
           enemySprites[jx].update();
         }
       }
 
       function renderEnemy() {
-        // Here we render all the sprites after clearing the screen
         finalLayer.clearRect(0, 0, canvasFinal.width, canvasFinal.height);
         for (var jx = enemySprites.length; jx--; ) {
           enemySprites[jx].render();
@@ -190,25 +184,21 @@
         }
         draw() {
           midLayer.rect(this.x, this.y, 6, 6);
-          midLayer.fillStyle = "blue";
+          midLayer.fillStyle = "white";
           midLayer.fill();
         }
         init() {
-          // Update position
           this.draw();
-          sprites.push(this);
+          bulletSprites.push(this);
         }
         render() {
           if (this.alive) {
-            // Render only if the bullet is alive (aka on screen)
             midLayer.fillRect(this.x, this.y, 7, 7);
           }
         }
         update() {
           if (this.alive) {
-            // update the x value only if the object is alive
             this.x += 4;
-            // Check if the bullet is on screen
             if (this.x > canvasMid.width) {
               this.alive = false;
             }
@@ -216,11 +206,9 @@
         }
       }
 
-      // This way when we draw the bullet it's always blue
       midLayer.fillStyle = "white";
 
-      // Our sprites container
-      var sprites = [];
+      var bulletSprites = [];
 
       function createBullet() {
         bullets = new Bullet(bulletCounter, x, y, vx);
@@ -229,47 +217,72 @@
       }
 
       function loop() {
-        // Very simple and naive game loop
         update();
         render();
         requestAnimationFrame(loop);
       }
 
       function update() {
-        // Here we update all the sprites
-        // THe reverse for loop is faster
-        for (var ix = sprites.length; ix--; ) {
-          sprites[ix].update();
+        for (var ix = bulletSprites.length; ix--; ) {
+          bulletSprites[ix].update();
         }
       }
 
       function render() {
-        // Here we render all the sprites after clearing the screen
         midLayer.clearRect(0, 0, canvasMid.width, canvasMid.height);
-        for (var ix = sprites.length; ix--; ) {
-          sprites[ix].render();
+        for (var ix = bulletSprites.length; ix--; ) {
+          bulletSprites[ix].render();
         }
       }
 
       function collisionDetection() {
-        for (i = 0; i < sprites.length; i++) {
-          if (sprites[i].alive) {
+        for (i = 0; i < bulletSprites.length; i++) {
+          if (bulletSprites[i].alive) {
             for (e = 0; e < enemySprites.length; e++) {
               if (enemySprites[e].alive) {
                 if (
-                  sprites[i].x > enemySprites[e].x &&
-                  sprites[i].x < enemySprites[e].x + (enemyWidth / 2) &&
-                  (sprites[i].y > enemySprites[e].y ||
-                    sprites[i].y < enemySprites[e].y + enemyHeight )
+                  bulletSprites[i].x > enemySprites[e].x &&
+                  bulletSprites[i].y > enemySprites[e].y &&
+                    bulletSprites[i].y < enemySprites[e].y + enemyHeight
                 ) {
-                  sprites[i].alive = false;
+                  bulletSprites[i].alive = false;
                   enemySprites[e].alive = false;
+                }
+                if (
+                  enemySprites[e].x == 0 ||
+                  (enemySprites[e].x < spriteWidth &&
+                    enemySprites[e].y > y &&
+                    enemySprites[e].y < y - spriteHeight)
+                ) {
+                  gameOver();
                 }
               }
             }
           }
         }
         requestAnimationFrame(collisionDetection);
+      }
+      /*
+      function saveScore() {
+        var date = new Date();
+        date.setMonth(date.getMonth() + 5);
+        var expires = "; expires=" + date.toGMTString();
+        document.cookie = "score=" + lvl + expires + "; path=/";
+      }
+
+      function loadScore() {
+        var cookiearray = document.cookie.split(";");
+        for (var i = cookiearray.length; i > 0 ; i--) {
+          var name = cookiearray[i].split("=")[0];
+          var value = cookiearray[i].split("=")[1];
+          if (name == "score") {
+            lvl = value;
+            Document.getElementById("score").innerHTML = lvl ;
+          }
+        }
+      } */
+      function gameOver() {
+        document.getElementById("resetBox").style.visibility = "visible";
       }
     </script>
   </body>
