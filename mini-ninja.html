@@ -8,18 +8,21 @@
   </head>
   <body>
     <div id="wrapper">
+      <canvas id="background" width="1360" height="664"></canvas>
       <canvas id="myCanvas" width="1360" height="664"></canvas>
       <canvas id="enemies" width="1360" height="664"></canvas>
-      <canvas id="canvastopLayer" width="1360" height="664"></canvas>
+      <canvas id="canvasfinalLayer" width="1360" height="664"></canvas>
+
     </div>
 
     <script>
+
       let canvas = document.getElementById("myCanvas");
       let ctx = canvas.getContext("2d");
       let canvasMid = document.getElementById("enemies");
       let midLayer = canvasMid.getContext("2d");
-      let canvasFinal = document.getElementById("canvastopLayer");
-      let topLayer = canvasFinal.getContext("2d");
+      let canvasFinal = document.getElementById("canvasfinalLayer");
+      let finalLayer = canvasFinal.getContext("2d");
 
       let x = 200;
       let y = canvas.height / 2;
@@ -32,17 +35,18 @@
       let img = new Image(); // Create new img element
       img.src = "player.png"; // Set source path
       let enemyImg = new Image(); // Create new img element
-      enemyImg.src = "player.png"; // Set source path
+      enemyImg.src = "enemy.png"; // Set source path
       let spriteHeight = 100;
       let spriteWidth = 200;
-      let enemyHeight = 100;
-      let enemyWidth = 200;
+      let enemyHeight = 50;
+      let enemyWidth = 150;
       let bulletx = 0;
       let bullety = 0;
       var bulletArray = [];
       var bulletCounter = 0;
       var enemyCounter = 0;
       var vx = 10;
+      let enemyY = 0;
 
       requestAnimationFrame(loop);
       requestAnimationFrame(enemyLoop);
@@ -80,7 +84,7 @@
             // update the x value only if the object is alive
             this.x += 4;
             // Check if the bullet is on screen
-            if (this.x > canvas.width) {
+            if (this.x > canvasMid.width) {
               this.alive = false;
             }
           }
@@ -116,22 +120,24 @@
 
       function render() {
         // Here we render all the sprites after clearing the screen
-        midLayer.clearRect(0, 0, canvas.width, canvas.height);
+        midLayer.clearRect(0, 0, canvasMid.width, canvasMid.height);
         for (var ix = sprites.length; ix--; ) {
           sprites[ix].render();
         }
       }
 
       class Enemy {
-        constructor(index, st, y, vx) {
+        constructor(index, st, enemyY, vx) {
           (this.index = index),
             (this.x = st),
-            (this.y = y),
+            (this.y = enemyY),
             (this.vx = vx),
             (this.alive = true);
+          console.log(this.y);
+          console.log(this.x);
         }
         draw() {
-          topLayer.drawImage(enemyImg, this.x, this.y, enemyWidth, enemyHeight);
+          finalLayer.drawImage(enemyImg, this.x, this.y, enemyWidth, enemyHeight);
         }
         init() {
           // Update position
@@ -141,7 +147,7 @@
         render() {
           if (this.alive) {
             // Render only if the bullet is alive (aka on screen)
-            topLayer.drawImage(
+            finalLayer.drawImage(
               enemyImg,
               this.x,
               this.y,
@@ -165,7 +171,8 @@
       var enemySprites = [];
 
       function createEnemy() {
-        enemies = new Enemy(enemyCounter, 1300, y, vx);
+        enemyY = Math.floor((Math.random()*500) + 50);
+        enemies = new Enemy(enemyCounter, canvasFinal.width, enemyY, vx);
         enemyCounter += 1;
         enemies.init();
       }
@@ -186,12 +193,11 @@
 
       function renderEnemy() {
         // Here we render all the sprites after clearing the screen
-        topLayer.clearRect(0, 0, canvas.width, canvas.height);
+        finalLayer.clearRect(0, 0, canvasFinal.width, canvasFinal.height);
         for (var jx = enemySprites.length; jx--; ) {
           enemySprites[jx].render();
         }
       }
-      
 
       document.addEventListener("keydown", keyDownHandler, false);
       document.addEventListener("keyup", keyUpHandler, false);
@@ -239,7 +245,7 @@
         }
         y += dy;
         window.requestAnimationFrame(draw);
-      }
+      } 
     </script>
   </body>
 </html>

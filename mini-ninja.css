@@ -1,13 +1,14 @@
 #wrapper{
   position:relative;
 }
-#myCanvas,#canvasTop,#enemies{
+#myCanvas,#canvasTop,#enemies,#background{
   position:absolute; top:0px; left:0px;
+  z-index: 1;
 }
-#myCanvas {
-  background: black;
+#background {
   margin:  0 0;
 }
+
 
 * {
   padding: 0;
