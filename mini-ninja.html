@@ -51,7 +51,7 @@
       });
       requestAnimationFrame(loop);
       requestAnimationFrame(enemyLoop);
-      setInterval("createEnemy()", 3000);
+      setInterval("createEnemy()", 2000);
       requestAnimationFrame(collisionDetection);
       document.addEventListener("keydown", keyDownHandler, false);
       document.addEventListener("keyup", keyUpHandler, false);
@@ -259,8 +259,8 @@
                 if (
                   sprites[i].x > enemySprites[e].x &&
                   sprites[i].x < enemySprites[e].x + (enemyWidth / 2) &&
-                  (sprites[i].y > enemySprites[e].y - (enemyHeight / 2) ||
-                    sprites[i].y < enemySprites[e].y + (enemyHeight / 2) )
+                  (sprites[i].y > enemySprites[e].y ||
+                    sprites[i].y < enemySprites[e].y + enemyHeight )
                 ) {
                   sprites[i].alive = false;
                   enemySprites[e].alive = false;
